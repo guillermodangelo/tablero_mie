@@ -1,8 +1,6 @@
 ﻿import streamlit as st
 import pandas as pd
-import numpy as np
 import statsmodels.api as sm
-
 
 st.set_page_config(page_title='Test')
 
@@ -28,7 +26,7 @@ def cargar_dd_deptos():
     
 dd = cargar_dd_deptos()
 
-prodSim = sm.load('data/restringido_origen_mvo.pickle')
+#prodSim = sm.load('data/restringido_origen_mvo.pickle')
 
 nom_depto = [
     'Montevideo', 'Artigas', 'Canelones',
