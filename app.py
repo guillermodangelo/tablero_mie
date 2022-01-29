@@ -52,22 +52,16 @@ nom_depto = [
     'Treinta y Tres'
     ]
 
-factor_edad = st.slider('Aumento edad', 0.0, 5.0, value=1.2)
+factor_edad = st.slider('Factor de aumento de la edad promedio en destino', 0.0, 5.0, value=1.2)
 
-factor_pbi = st.slider('Aumento PBI', 0.0, 5.0, value=1.2)
+factor_pbi = st.slider('Factor de aumento del PBI en destino (millardos)', 0.0, 5.0, value=1.2)
 
 
 
 dd_new = dd.copy()
 
 dd_new['log_edad_promedio_des'] = np.log(factor_edad * dd_new.edad_prom_des)
-st.write(dd_new['log_edad_promedio_des'])
-st.write(prodSim.summary())
-
-
 dd_new['log_pbi_destino_millardos'] = np.log(factor_pbi * dd_new.pbi_destino_millardos)
-st.write(dd_new['log_pbi_destino_millardos'])
-st.write(prodSim.summary())
 
 
 def print_scores_simple(ground_truth, estimation):
@@ -80,9 +74,8 @@ def print_scores_simple(ground_truth, estimation):
 
 
 actual_counts = dd.personas_mig
-new_pred = prodSim.predict(dd_new)
+new_pred = round(prodSim.predict(dd_new)).astype(int)
 
-#predicted_counts = new_pred.summary_frame()['mean'].round(0).astype(int)
 
 st.write(actual_counts)
 
@@ -91,6 +84,5 @@ st.write(new_pred)
 
 print_scores_simple(actual_counts, new_pred)
 
-title = 'Groud truth vs. estimaciones'
-subtitle = 'MIE restringido en origen con Mvdeo.'
+
 
