@@ -54,16 +54,38 @@ nom_depto = [
     'Treinta y Tres'
     ]
 
-factor_edad = st.slider('Factor de aumento de la edad promedio en destino 🧓', 0.0, 5.0, value=1.0)
 
-factor_pbi = st.slider('Factor de aumento del PBI en destino (millardos) 💸', 0.0, 5.0, value=1.0)
+st.sidebar.title(
+    'Elija factores de ponderación para modificar el escenario de migración interna'
+    )
 
+factor_pob = st.sidebar.slider(
+    'Factor de aumento o reducción la población en destino (miles de personas) 🤰', 0.0, 2.0, value=1.0
+    )
 
+factor_edad = st.sidebar.slider(
+    'Factor de aumento de la edad promedio en destino 🧓', 1.0, 5.0, value=1.0
+    )
+
+factor_pbi = st.sidebar.slider(
+    'Factor de aumento del PBI en destino (millardos) 💸', 1.0, 3.0, value=1.0
+    )
+
+factor_ocup = st.sidebar.slider(
+    'Factor de aumento o reducción del porcentaje de ocupados en destino 🛠', 0.01, 3.0, value=1.0
+    )
+
+# factor_pob = st.slider('Factor de aumento o reducción la población en destino (miles de personas) 🤰', 0.0, 2.5, value=1.0)
+# factor_edad = st.slider('Factor de aumento de la edad promedio en destino 🧓', 1.0, 5.0, value=1.0)
+# factor_pbi = st.slider('Factor de aumento del PBI en destino (millardos) 💸', 1.0, 3.0, value=1.0)
+# factor_ocup = st.slider('Factor de aumento o reducción del porcentaje de ocupados en destino 🛠', 0.01, 3.0, value=1.0)
 
 dd_new = dd.copy()
 
+dd_new['log_pob_destino_k'] = np.log(factor_pob * dd_new.pob_destino_k)
 dd_new['log_edad_promedio_des'] = np.log(factor_edad * dd_new.edad_prom_des)
 dd_new['log_pbi_destino_millardos'] = np.log(factor_pbi * dd_new.pbi_destino_millardos)
+dd_new['log_porc_ocupados_des'] = np.log(factor_ocup * dd_new.porc_ocupados_des)
 
 
 def print_scores_simple(ground_truth, estimation):
@@ -84,20 +106,28 @@ st.markdown('**Métricas del modelo estimado:**')
 print_scores_simple(actual_counts, new_pred)
 
 
-
 # matriz de los valores estimados
+st.subheader("Matriz de datos estimados 📉")
+
 dd['prodsimest'] = new_pred
+
+dd['depto_origen'] = dd['depto_origen'].astype(str).str.zfill(3)
+dd['depto_destino'] = dd['depto_destino'].astype(str).str.zfill(3)
 
 matriz = pd.pivot_table(dd,
                         values='prodsimest',
-                        index ='nom_depto_orig',
-                        columns='nom_depto_des',
+                        index ='depto_origen',
+                        columns='depto_destino',
                         fill_value=0,
                         aggfunc=sum,
-                        margins=True,
-                        margins_name='Total')
+                        margins=True)
 
-st.subheader("Matriz de datos estimados 📉")
+var_names = nom_depto + ['Total']
+
+matriz.columns = var_names
+matriz = matriz.rename(index = dict(zip(matriz.index,  var_names)))
 
 st.write(matriz)
+
+
 
