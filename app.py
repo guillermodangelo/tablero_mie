@@ -2,7 +2,10 @@
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
+import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
+from graficas import size_font
+
 
 st.set_page_config(page_title='Test')
 
@@ -127,7 +130,65 @@ var_names = nom_depto + ['Total']
 matriz.columns = var_names
 matriz = matriz.rename(index = dict(zip(matriz.index,  var_names)))
 
+
 st.write(matriz)
 
 
+def plot_difference(df1, df2, vmin, vmax):
+    "Plotea matriz de diferencias"
+    size, font, _ = size_font()
+    diferencia = np.subtract(df1.values, df2.values)
+    fig = plt.figure(figsize=(3, 3))
 
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(diferencia, cmap='RdBu',  vmin=vmin, vmax=vmax)
+
+    ax.grid(color='silver', linestyle='--', linewidth=0.5)
+
+    plt.xticks(np.arange(0, 19, step=1), labels=nom_depto, **font, rotation=90, color='grey')
+
+    plt.yticks(np.arange(0, 19, step=1), labels=nom_depto, **font, color='grey')
+
+    ax.tick_params(axis=u'both', which=u'both', length=0)
+
+    # color bar
+    cbar = fig.colorbar(cax, fraction=0.045, drawedges=False)
+
+    cbar.outline.set_visible(False)
+
+    cbar.ax.tick_params(size=3, color='w',
+                        labelsize=size,
+                        labelcolor='grey')
+
+    _ = [l.set_family(font['fontname']) for l in cbar.ax.yaxis.get_ticklabels()]
+
+    return fig
+
+
+
+gt = pd.pivot_table(
+    dd,
+    values='personas_mig',
+    index ='depto_origen',
+    columns='depto_destino',
+    fill_value=0,
+    aggfunc=sum
+    )
+
+escenario = pd.pivot_table(
+    dd,
+    values='prodsimest',
+    index ='depto_origen',
+    columns='depto_destino',
+    fill_value=0,
+    aggfunc=sum
+    )
+
+
+
+
+plot = plot_difference(gt, escenario, -30, 30)
+
+st.subheader("Ground truth vs. estimación 📉")
+
+st.pyplot(fig=plot, clear_figure=None)
